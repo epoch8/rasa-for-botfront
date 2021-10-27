@@ -1,6 +1,0 @@
-{
-    "files.exclude": {
-        "rasa_addons": true,
-        "rasa": true,
-    }
-} 
