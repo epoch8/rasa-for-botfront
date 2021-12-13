@@ -1,6 +1,7 @@
 {
     "files.exclude": {
-        "rasa_addons": true,
-        "rasa": true,
-    }
+        // "rasa_addons": true,
+        // "rasa": true,
+    },
+    "cSpell.language": "en,ru,ru-RU"
 } 
