@@ -1185,7 +1185,7 @@ def create_app(
         # return run_evaluation(
         #     data_path, nlu_model, disable_plotting=True, report_as_dict=True
         # )
-        evaluation = run_evaluation(
+        evaluation = await run_evaluation(
             data_path,
             nlu_model.get(language),
             disable_plotting=True,
