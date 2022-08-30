@@ -262,19 +262,10 @@ async def _replace_edge_labels_with_nodes(
     looks better if in the final graphs the user messages are nodes instead
     of edge labels."""
 
-    if nlu_training_data:
-        message_generator = UserMessageGenerator(nlu_training_data)
-    else:
-        message_generator = None
-
     edges = list(graph.edges(keys=True, data=True))
     for s, e, k, d in edges:
         if k != EDGE_NONE_LABEL:
-            if message_generator and d.get("label", k) is not None:
-                parsed_info = await interpreter.parse(d.get("label", k))
-                label = message_generator.message_for_data(parsed_info)
-            else:
-                label = d.get("label", k)
+            label = k
             next_id += 1
             graph.remove_edge(s, e, k)
             graph.add_node(
@@ -406,6 +397,12 @@ async def visualize_neighborhood(
     fontsize: int = 12,
 ):
     """Given a set of event lists, visualizing the flows."""
+    import yaml
+
+    def _yml_into_dict(file_path):
+        with open(file_path, "rb") as f:
+            return yaml.load(f.read(), Loader=yaml.FullLoader)
+    responses = _yml_into_dict("domain.yml")["responses"]
 
     graph = _create_graph(fontsize)
     _add_default_nodes(graph)
@@ -438,9 +435,12 @@ async def visualize_neighborhood(
                 isinstance(el, ActionExecuted) and el.action_name != ACTION_LISTEN_NAME
             ):
                 next_node_idx += 1
+                label=el.action_name
+                if label[:5] == "utter":
+                    label = responses[label][0]["text"]
                 graph.add_node(
                     next_node_idx,
-                    label=el.action_name,
+                    label=label,
                     fontsize=fontsize,
                     **{"class": "active" if is_current else ""},
                 )
