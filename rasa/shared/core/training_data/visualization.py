@@ -1,6 +1,7 @@
 from collections import defaultdict, deque
 
 import random
+import yaml
 from typing import Any, Text, List, Dict, Optional, TYPE_CHECKING, Set
 
 import rasa.shared.utils.io
@@ -397,7 +398,6 @@ async def visualize_neighborhood(
     fontsize: int = 12,
 ):
     """Given a set of event lists, visualizing the flows."""
-    import yaml
 
     def _yml_into_dict(file_path):
         with open(file_path, "rb") as f:
