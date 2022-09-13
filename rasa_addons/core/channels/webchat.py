@@ -215,7 +215,7 @@ class WebchatInput(SocketIOInput):
                 sio.enter_room(sid, data["session_id"])
             if self.config is not None:
                 props = self.config
-            else:
+            elif os.getenv("BF_URL"):
                 config = await get_config_via_graphql(
                     os.environ.get("BF_URL"), os.environ.get("BF_PROJECT_ID")
                 )
