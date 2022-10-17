@@ -69,6 +69,9 @@ class VkOutput(OutputChannel):
                         "label": piece["title"]
                     }
                 }
+            result.append(row)
+        return result
+        
 
     async def send_text_with_buttons(
         self,
@@ -147,7 +150,7 @@ class VkInput(InputChannel):
                 return
             if data["secret"] != self.secret_key:
                 logger.error("The secret key doesn't match the passed one")
-                return text("incorrect secret key")
+                return text("Incorrect secret key")
 
             try:
                 if data["type"] == "message_new":
