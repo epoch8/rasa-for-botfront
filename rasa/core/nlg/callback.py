@@ -59,7 +59,8 @@ def nlg_request_format(
 ) -> Dict[Text, Any]:
     """Create the json body for the NLG json body for the request."""
 
-    tracker_state = tracker.current_state(EventVerbosity.ALL)
+    # In very active session this request at verbosity FULL becomes extremely large
+    tracker_state = tracker.current_state(EventVerbosity.NONE)
 
     return {
         "template": template_name,
