@@ -22,6 +22,7 @@ from typing import (
     NoReturn,
     Coroutine,
 )
+import base64
 
 import aiohttp
 from sanic import Sanic, response
@@ -83,6 +84,11 @@ YAML_CONTENT_TYPE = "application/x-yaml"
 OUTPUT_CHANNEL_QUERY_KEY = "output_channel"
 USE_LATEST_INPUT_CHANNEL_AS_OUTPUT_CHANNEL = "latest"
 EXECUTE_SIDE_EFFECTS_QUERY_KEY = "execute_side_effects"
+
+BF_PROJECT_ID = os.getenv("BF_PROJECT_ID")
+SEND_MODEL_TO_ADMIN_AFTER_TRAIN = bool(os.getenv("SEND_MODEL_TO_ADMIN_AFTER_TRAIN"))
+CHATBOT_ADMIN_URL = os.getenv("CHATBOT_ADMIN_URL")
+CHATBOT_ADMIN_API_KEY = os.getenv("CHATBOT_ADMIN_API_KEY")
 
 
 class ErrorResponse(Exception):
@@ -1033,6 +1039,20 @@ def create_app(
                     )
 
                     logger.debug(f"Successfully loaded model '{filename}'.")
+                
+                if SEND_MODEL_TO_ADMIN_AFTER_TRAIN is True:
+                    with open(training_result.model, 'rb') as f:
+                        base64_bytes = base64.b64encode(f.read())
+                        base64_model = base64_bytes.decode('ascii')
+                        async with aiohttp.ClientSession() as session:
+                            data = {
+                                "projectId": BF_PROJECT_ID,
+                                "model": base64_model
+                            }
+                            params = {"token": CHATBOT_ADMIN_API_KEY}
+                            async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as response:
+                                logger.debug(f"Loaded model to admin with status: {response.status}")
+
 
                 return await response.file(
                     training_result.model,
