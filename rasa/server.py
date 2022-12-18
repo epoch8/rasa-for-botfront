@@ -1042,12 +1042,10 @@ def create_app(
                 
                 if SEND_MODEL_TO_ADMIN_AFTER_TRAIN is True:
                     with open(training_result.model, 'rb') as f:
-                        base64_bytes = base64.b64encode(f.read())
-                        base64_model = base64_bytes.decode('ascii')
                         async with aiohttp.ClientSession() as session:
                             data = {
                                 "projectId": BF_PROJECT_ID,
-                                "model": base64_model
+                                "model": f.read()
                             }
                             params = {"token": CHATBOT_ADMIN_API_KEY}
                             async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as response:
