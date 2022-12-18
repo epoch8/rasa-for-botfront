@@ -1048,9 +1048,9 @@ def create_app(
                                 "model": f.read()
                             }
                             params = {"token": CHATBOT_ADMIN_API_KEY}
-                            async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as response:
-                                logger.debug(f"Loaded model to admin with status: {response.status}")
-
+                            async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as resp:
+                                logger.debug(f"Loaded model to admin with status: {resp.status}")
+                                return response.empty(status=200)
 
                 return await response.file(
                     training_result.model,
