@@ -1045,7 +1045,7 @@ def create_app(
                         async with aiohttp.ClientSession() as session:
                             data = {
                                 "projectId": BF_PROJECT_ID,
-                                "model": f.read()
+                                "model": f
                             }
                             params = {"token": CHATBOT_ADMIN_API_KEY}
                             async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as resp:
