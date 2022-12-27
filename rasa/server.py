@@ -86,9 +86,9 @@ USE_LATEST_INPUT_CHANNEL_AS_OUTPUT_CHANNEL = "latest"
 EXECUTE_SIDE_EFFECTS_QUERY_KEY = "execute_side_effects"
 
 BF_PROJECT_ID = os.getenv("BF_PROJECT_ID")
-SEND_MODEL_TO_ADMIN_AFTER_TRAIN = bool(os.getenv("SEND_MODEL_TO_ADMIN_AFTER_TRAIN"))
-CHATBOT_ADMIN_URL = os.getenv("CHATBOT_ADMIN_URL")
-CHATBOT_ADMIN_API_KEY = os.getenv("CHATBOT_ADMIN_API_KEY")
+SEND_MODEL_AFTER_TRAIN = bool(os.getenv("SEND_MODEL_AFTER_TRAIN"))
+SEND_MODEL_URL = os.getenv("SEND_MODEL_URL")
+SEND_MODEL_API_KEY = os.getenv("SEND_MODEL_API_KEY")
 
 
 class ErrorResponse(Exception):
@@ -1039,16 +1039,16 @@ def create_app(
                     )
 
                     logger.debug(f"Successfully loaded model '{filename}'.")
-                
-                if SEND_MODEL_TO_ADMIN_AFTER_TRAIN is True:
+
+                if SEND_MODEL_AFTER_TRAIN:
                     with open(training_result.model, 'rb') as f:
                         async with aiohttp.ClientSession() as session:
                             data = {
                                 "projectId": BF_PROJECT_ID,
                                 "model": f
                             }
-                            params = {"token": CHATBOT_ADMIN_API_KEY}
-                            async with session.post(CHATBOT_ADMIN_URL, data=data, params=params) as resp:
+                            params = {"token": SEND_MODEL_API_KEY} if SEND_MODEL_API_KEY else {}
+                            async with session.post(SEND_MODEL_URL, data=data, params=params) as resp:
                                 logger.debug(f"Loaded model to admin with status: {resp.status}")
                                 return response.empty(status=200)
 
