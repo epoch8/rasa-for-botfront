@@ -50,6 +50,7 @@ KEY_INTENTS = "intents"
 KEY_ENTITIES = "entities"
 KEY_RESPONSES = "responses"
 KEY_ACTIONS = "actions"
+KEY_ACTIONS_PARAMS = "actions_params"
 KEY_FORMS = "forms"
 KEY_E2E_ACTIONS = "e2e_actions"
 KEY_RESPONSES_TEXT = "text"
@@ -106,7 +107,7 @@ class Domain:
 
     @classmethod
     def empty(cls) -> "Domain":
-        return cls([], [], [], {}, [], {})
+        return cls([], [], [], {}, [], {}, {})
 
     @classmethod
     def load(cls, paths: Union[List[Union[Path, Text]], Text, Path]) -> "Domain":
@@ -180,6 +181,7 @@ class Domain:
             slots,
             utter_templates,
             data.get(KEY_ACTIONS, []),
+            data.get(KEY_ACTIONS_PARAMS, {}),
             data.get(KEY_FORMS, {}),
             data.get(KEY_E2E_ACTIONS, []),
             session_config=session_config,
@@ -500,6 +502,7 @@ class Domain:
         slots: List[Slot],
         templates: Dict[Text, List[Dict[Text, Any]]],
         action_names: List[Text],
+        actions_params: Dict[Text, Any],
         forms: Union[Dict[Text, Any], List[Text]],
         action_texts: Optional[List[Text]] = None,
         store_entities_as_slots: bool = True,
@@ -520,6 +523,7 @@ class Domain:
                 events for entities if there are slots with the same name as the entity.
             session_config: Configuration for conversation sessions. Conversations are
                 restarted at the end of a session.
+            actions_params: Params for actions
         """
         self.entities, self.roles, self.groups = self.collect_entity_properties(
             entities
@@ -556,6 +560,7 @@ class Domain:
             ]
             + self.action_texts
         )
+        self.actions_params = actions_params
 
         self._user_slots = copy.copy(slots)
         self.slots = slots
@@ -662,6 +667,7 @@ class Domain:
             self_as_dict[KEY_INTENTS]
         )
         self_as_dict[KEY_ACTIONS] = self.action_names_or_texts
+        self_as_dict[KEY_ACTIONS_PARAMS] = self.actions_params
         return rasa.shared.utils.io.get_dictionary_fingerprint(self_as_dict)
 
     @rasa.shared.utils.common.lazy_property
@@ -1155,6 +1161,7 @@ class Domain:
             KEY_SLOTS: self._slot_definitions(),
             KEY_RESPONSES: self.templates,
             KEY_ACTIONS: self._custom_actions,
+            KEY_ACTIONS_PARAMS: self.actions_params,
             KEY_FORMS: self.forms,
             KEY_E2E_ACTIONS: self.action_texts,
         }

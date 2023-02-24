@@ -758,6 +758,7 @@ def test_check_domain_sanity_on_invalid_domain():
             slots=[],
             templates={},
             action_names=["random_name", "random_name"],
+            actions_params={},
             forms={},
         )
 
@@ -768,6 +769,7 @@ def test_check_domain_sanity_on_invalid_domain():
             slots=[TextSlot("random_name"), TextSlot("random_name")],
             templates={},
             action_names=[],
+            actions_params={},
             forms={},
         )
 
@@ -778,6 +780,7 @@ def test_check_domain_sanity_on_invalid_domain():
             slots=[],
             templates={},
             action_names=[],
+            actions_params={},
             forms={},
         )
 
@@ -788,6 +791,7 @@ def test_check_domain_sanity_on_invalid_domain():
             slots=[],
             templates={},
             action_names=[],
+            actions_params={},
             forms=["random_name", "random_name"],
         )
 

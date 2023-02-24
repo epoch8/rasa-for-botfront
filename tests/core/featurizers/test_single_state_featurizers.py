@@ -141,6 +141,7 @@ def test_single_state_featurizer_prepare_for_training():
         templates={},
         forms=[],
         action_names=["utter_greet", "action_check_weather"],
+        actions_params={},
     )
 
     f = SingleStateFeaturizer()
@@ -166,6 +167,7 @@ def test_single_state_featurizer_creates_encoded_all_actions():
         templates={},
         forms={},
         action_names=["a", "b", "c", "d"],
+        actions_params={},
     )
 
     f = SingleStateFeaturizer()
@@ -196,6 +198,7 @@ def test_single_state_featurizer_with_entity_roles_and_groups(
         templates={},
         forms={},
         action_names=[],
+        actions_params={},
     )
     f = SingleStateFeaturizer()
     f.prepare_for_training(domain, RegexInterpreter())
@@ -240,6 +243,7 @@ def test_single_state_featurizer_with_bilou_entity_roles_and_groups(
         templates={},
         forms={},
         action_names=[],
+        actions_params={},
     )
     f = SingleStateFeaturizer()
     f.prepare_for_training(domain, RegexInterpreter(), bilou_tagging=True)
@@ -477,7 +481,7 @@ def test_single_state_featurizer_uses_regex_interpreter(
     from rasa.core.agent import Agent
 
     domain = Domain(
-        intents=[], entities=[], slots=[], templates={}, forms=[], action_names=[],
+        intents=[], entities=[], slots=[], templates={}, forms=[], action_names=[], actions_params={},
     )
     f = SingleStateFeaturizer()
     # simulate that core was trained separately by passing

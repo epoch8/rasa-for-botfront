@@ -356,6 +356,7 @@ class ResponsesSyncImporter(TrainingDataImporter):
             [],
             response_templates,
             ResponsesSyncImporter._construct_retrieval_action_names(retrieval_intents),
+            existing_domain.actions_params,
             {},
         )
 
@@ -438,6 +439,7 @@ class E2EImporter(TrainingDataImporter):
             [],
             {},
             action_names=[],
+            actions_params={},
             forms={},
             action_texts=additional_e2e_action_names,
         )

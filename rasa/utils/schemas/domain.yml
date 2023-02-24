@@ -36,6 +36,24 @@ mapping:
     sequence:
     - type: "str"
       required: True
+  actions_params:
+    type: "map"
+    mapping:
+      regex;(.*):
+        type: "map"
+        mapping:
+          base_action:
+            type: "str"
+            required: True
+          args:
+            type: "seq"
+            sequence:
+            - type: "any"
+          kwargs:
+            type: "map"
+            mapping:
+              regex;(.*):
+                type: "any"
   responses:
     # see utils/schemas/responses.yml
     include: responses
