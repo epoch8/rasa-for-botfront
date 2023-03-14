@@ -96,6 +96,7 @@ def test_domain_action_instantiation():
         slots=[],
         templates={},
         action_names=["my_module.ActionTest", "utter_test", "utter_chitchat"],
+        actions_params={},
         forms={},
     )
 

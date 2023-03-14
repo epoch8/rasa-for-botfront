@@ -937,6 +937,7 @@ def _write_domain_to_file(
         slots=[],
         templates=templates,
         action_names=collected_actions,
+        actions_params=old_domain.actions_params,
         forms={},
     )
 
