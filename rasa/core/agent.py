@@ -115,7 +115,7 @@ def _load_domain_and_policy_ensemble(
     return domain, policy_ensemble
 
 
-def _load_and_set_updated_model(
+def load_and_set_updated_model(
     agent: "Agent", model_directory: Text, fingerprint: Text
 ) -> None:
     """Load the persisted model into memory and set the model on the agent.
@@ -156,7 +156,7 @@ async def _update_model_from_server(
         )
 
         if new_fingerprint:
-            _load_and_set_updated_model(agent, model_directory, new_fingerprint)
+            load_and_set_updated_model(agent, model_directory, new_fingerprint)
             remove_dir = False
         else:
             logger.debug(f"No new model found at URL {model_server.url}")

@@ -39,6 +39,7 @@ import rasa.shared.utils.io
 import rasa.utils.endpoints
 import rasa.utils.io
 import rasa.shared.data
+from rasa.model import fingerprint_from_path
 from rasa.shared.core.training_data.story_writer.yaml_story_writer import (
     YAMLStoryWriter,
 )
@@ -54,7 +55,7 @@ from rasa.shared.constants import (
     DEFAULT_MODELS_PATH,
 )
 from rasa.shared.core.domain import InvalidDomain, Domain
-from rasa.core.agent import Agent
+from rasa.core.agent import Agent, load_and_set_updated_model
 from rasa.core.brokers.broker import EventBroker
 from rasa.core.channels.channel import (
     CollectingOutputChannel,
@@ -1032,11 +1033,9 @@ def create_app(
                 filename = os.path.basename(training_result.model)
 
                 if load_model_after is True:
-                    app.agent = await _load_agent(
-                        training_result.model,
-                        endpoints=endpoints,
-                        lock_store=app.agent.lock_store,
-                    )
+                    with model.get_model(training_result.model) as unpacked_model:
+                        fingerprint = fingerprint_from_path(unpacked_model)
+                        load_and_set_updated_model(app.agent, unpacked_model, fingerprint['config'])
 
                     logger.debug(f"Successfully loaded model '{filename}'.")
 
