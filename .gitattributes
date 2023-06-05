@@ -1,3 +1,4 @@
 * -text
 # Reclassifies `Dockerfile*` files as Dockerfile:
 Dockerfile.* linguist-language=Dockerfile
+*.deb filter=lfs diff=lfs merge=lfs -text
