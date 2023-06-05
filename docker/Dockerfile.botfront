@@ -1,12 +1,62 @@
-FROM python:3.8 as base
+ARG UBUNTU_VERSION=18.04
+
+ARG CUDA=10.1
+FROM nvidia/cuda:10.1-base-ubuntu18.04 as base
+# ARCH and CUDA are specified again because the FROM directive resets ARGs
+# (but their default value is retained if set previously)
+ARG CUDA_DASH=10-1
+ARG CUDNN=7.6.4.38-1
+ARG CUDNN_MAJOR_VERSION=7
+ARG LIB_DIR_PREFIX=x86_64
+ARG LIBNVINFER=6.0.1-1
+ARG LIBNVINFER_MAJOR_VERSION=6
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cuda-command-line-tools-${CUDA_DASH} \
+        # There appears to be a regression in libcublas10=10.2.2.89-1 which
+        # prevents cublas from initializing in TF. See
+        # https://github.com/tensorflow/tensorflow/issues/9489#issuecomment-562394257
+        libcublas10=10.2.1.243-1 \ 
+        cuda-nvrtc-${CUDA_DASH} \
+        cuda-cufft-${CUDA_DASH} \
+        cuda-curand-${CUDA_DASH} \
+        cuda-cusolver-${CUDA_DASH} \
+        cuda-cusparse-${CUDA_DASH} \
+        curl \
+        libcudnn8 \
+        libfreetype6-dev \
+        libhdf5-serial-dev \
+        libzmq3-dev \
+        pkg-config \
+        software-properties-common \
+        unzip
+
+COPY ./docker/cuda/libcudnn7_7.6.5.32-1+cuda10.1_amd64.deb /tmp/
+RUN dpkg -i /tmp/libcudnn7_7.6.5.32-1+cuda10.1_amd64.deb
+
+# For CUDA profiling, TensorFlow requires CUPTI.
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
+# dynamic linker run-time bindings
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
+    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
+    && ldconfig
+
+RUN add-apt-repository ppa:deadsnakes/ppa && apt install -y \
+    python3.8 \
+    python3.8-dev \
+    python3.8-venv
 
 RUN apt-get update -qq \
  && apt-get install -y --no-install-recommends \
     # required by psycopg2 at build and runtime
     libpq-dev \
      # required for health check
-    curl \
- && apt-get autoremove -y
+    curl
 
 FROM base as builder
 
@@ -26,7 +76,7 @@ RUN apt-get update -qq && \
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
 ENV POETRY_VERSION 1.1.15
-RUN curl -sSL https://install.python-poetry.org | python
+RUN curl -sSL https://install.python-poetry.org | python3.8
 ENV PATH "/root/.local/bin:/opt/venv/bin:${PATH}"
 
 # change working directory
@@ -36,7 +86,7 @@ COPY pyproject.toml poetry.lock ./
 COPY rasa_addons/ ./rasa_addons/
 
 # install dependencies
-RUN python -m venv /opt/venv && \
+RUN --mount=type=cache,target=/root/.cache python3.8 -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
   pip install --no-cache-dir -U pip && \
   poetry install --extras full --no-dev --no-root --no-interaction
