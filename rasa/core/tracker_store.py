@@ -385,6 +385,37 @@ class RedisTrackerStore(TrackerStore):
         return self.red.keys(self.key_prefix + "*")
 
 
+class RedisClusterTrackerStore(RedisTrackerStore):
+    """Stores conversation history in Redis Cluster"""
+
+    def __init__(
+        self,
+        domain,
+        host="localhost",
+        port=6379,
+        db=0,
+        password: Optional[Text] = None,
+        event_broker: Optional[EventBroker] = None,
+        record_exp: Optional[float] = None,
+        key_prefix: Optional[Text] = None,
+        use_ssl: bool = False,
+        **kwargs: Dict[Text, Any],
+    ) -> None:
+        import redis
+
+        self.red = redis.cluster.RedisCluster(
+            host=host, port=port, password=password, ssl=use_ssl
+        )
+        self.record_exp = record_exp
+
+        self.key_prefix = DEFAULT_REDIS_TRACKER_STORE_KEY_PREFIX
+        if key_prefix:
+            logger.debug(f"Setting non-default redis key prefix: '{key_prefix}'.")
+            self._set_key_prefix(key_prefix)
+
+        super(RedisTrackerStore, self).__init__(domain, event_broker, **kwargs)
+
+
 class DynamoTrackerStore(TrackerStore):
     """Stores conversation history in DynamoDB"""
 
@@ -1208,6 +1239,13 @@ def _create_from_endpoint_config(
         tracker_store = InMemoryTrackerStore(domain, event_broker)
     elif endpoint_config.type.lower() == "redis":
         tracker_store = RedisTrackerStore(
+            domain=domain,
+            host=endpoint_config.url,
+            event_broker=event_broker,
+            **endpoint_config.kwargs,
+        )
+    elif endpoint_config.type.lower() == "redis_cluster":
+        tracker_store = RedisClusterTrackerStore(
             domain=domain,
             host=endpoint_config.url,
             event_broker=event_broker,

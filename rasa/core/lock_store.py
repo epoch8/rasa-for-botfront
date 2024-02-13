@@ -261,6 +261,52 @@ class RedisLockStore(LockStore):
         self.red.set(self.key_prefix + lock.conversation_id, lock.dumps())
 
 
+class RedisClusterLockStore(RedisLockStore):
+    """Redis Cluster store for ticket locks."""
+
+    def __init__(
+        self,
+        host: Text = "localhost",
+        port: int = 6379,
+        db: int = 1,
+        password: Optional[Text] = None,
+        use_ssl: bool = False,
+        key_prefix: Optional[Text] = None,
+        socket_timeout: float = DEFAULT_SOCKET_TIMEOUT_IN_SECONDS,
+    ) -> None:
+        """Create a lock store which uses Redis Cluster for persistence.
+
+        Args:
+            host: The host of the redis server.
+            port: The port of the redis server.
+            db: The name of the database within Redis which should be used by Rasa
+                Open Source.
+            password: The password which should be used for authentication with the
+                Redis database.
+            use_ssl: `True` if SSL should be used for the connection to Redis.
+            key_prefix: prefix to prepend to all keys used by the lock store. Must be
+                alphanumeric.
+            socket_timeout: Timeout in seconds after which an exception will be raised
+                in case Redis doesn't respond within `socket_timeout` seconds.
+        """
+        import redis
+
+        self.red = redis.cluster.RedisCluster(
+            host=host,
+            port=int(port),
+            password=password,
+            ssl=use_ssl,
+            socket_timeout=socket_timeout,
+        )
+
+        self.key_prefix = DEFAULT_REDIS_LOCK_STORE_KEY_PREFIX
+        if key_prefix:
+            logger.debug(f"Setting non-default redis key prefix: '{key_prefix}'.")
+            self._set_key_prefix(key_prefix)
+
+        super(RedisLockStore, self).__init__()
+
+
 class InMemoryLockStore(LockStore):
     """In-memory store for ticket locks."""
 
@@ -296,6 +342,8 @@ def _create_from_endpoint_config(
         lock_store = InMemoryLockStore()
     elif endpoint_config.type == "redis":
         lock_store = RedisLockStore(host=endpoint_config.url, **endpoint_config.kwargs)
+    elif endpoint_config.type == "redis_cluster":
+        lock_store = RedisClusterLockStore(host=endpoint_config.url, **endpoint_config.kwargs)
     else:
         lock_store = _load_from_module_name_in_endpoint_config(endpoint_config)
 
